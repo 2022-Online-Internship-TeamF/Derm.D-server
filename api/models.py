@@ -37,15 +37,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    LEVEL_CHOICE = [
-        ('Ruby', 'Ruby'),
-        ('Diamond', 'Diamond'),
-        ('Platinum', 'Platinum'),
-        ('Gold', 'Gold'),
-        ('Silver', 'Silver'),
-        ('Bronze', 'Bronze'),
-    ]
-
     nickname = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=200, unique=True)
 
