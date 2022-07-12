@@ -2,6 +2,10 @@ from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager, PermissionsMixin)
 
 
+# class Hosptial(models.Model):
+# 기능 추가 시 병원 모델 추가
+
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -33,21 +37,10 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    LEVEL_CHOICE = [
-        ('Ruby', 'Ruby'),
-        ('Diamond', 'Diamond'),
-        ('Platinum', 'Platinum'),
-        ('Gold', 'Gold'),
-        ('Silver', 'Silver'),
-        ('Bronze', 'Bronze'),
-    ]
-
     nickname = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=200, unique=True)
 
-    max_score = models.IntegerField(default=0)
-    max_score_date = models.DateTimeField(null=True)
-    level = models.CharField(max_length=20, choices=LEVEL_CHOICE, default='Bronze')
+    doctor_flag = models.BooleanField(default=False)
 
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -58,4 +51,81 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['nickname']
 
     def __str__(self):
-        return '[{}] {}'.format(self.level, self.username)
+        return '[Doctor : {}] {}'.format(self.doctor_flag, self.nickname)
+
+
+class BaseModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class Condition(BaseModel):
+    kr_name = models.CharField(max_length=30, blank=True)
+    eng_name = models.CharField(max_length=30)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return '{} ({})'.format(self.kr_name, self.eng_name)
+
+
+class Archive(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='archive')
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='archive')
+
+    def __str__(self):
+        return '[User : {}] {}'.format(self.user.nickname, self.condition.eng_name)
+
+
+class Question(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='question')
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='question')
+
+    content = models.TextField()
+
+    def __str__(self):
+        return '[{} : Q{}] - {}'.format(self.condition.eng_name, self.id, self.user.nickname)
+
+
+class Answer(BaseModel):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answer')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer')
+    # hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='answer')
+
+    content = models.TextField()
+
+    def __str__(self):
+        return '[{} : Q{}] - A{} by {}'.format(self.question.condition.eng_name, self.question.id, self.id, self.user.nickname)
+
+
+class ConditionMedia(BaseModel):
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='conditionMedia')
+
+    img = models.ImageField(blank=True)
+    main_flag = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '{} ({}) - (Main : {})'.format(self.condition.kr_name, self.condition.eng_name, self.main_flag)
+
+
+class QuestionMedia(BaseModel):
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='questionMedia')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='questionMedia')
+
+    img = models.ImageField(blank=True)
+    main_flag = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '[{} : Q{}] - {} (Main : {})'.format(self.condition.eng_name, self.question.id, self.question.user.nickname, self.main_flag)
+
+
+class AnswerMedia(BaseModel):
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='answerMedia')
+
+    img = models.ImageField(blank=True)
+    main_flag = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '[{} : Q{}] - A{} by {} (Main : {})'.format(self.answer.question.condition.eng_name, self.answer.question.id, self.answer.id, self.answer.user.nickname, self.main_flag)
