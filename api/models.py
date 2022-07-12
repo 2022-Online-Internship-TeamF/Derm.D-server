@@ -45,9 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     nickname = models.CharField(max_length=20, unique=True)
     email = models.CharField(max_length=200, unique=True)
 
-    max_score = models.IntegerField(default=0)
-    max_score_date = models.DateTimeField(null=True)
-    level = models.CharField(max_length=20, choices=LEVEL_CHOICE, default='Bronze')
+    doctor_flag = models.BooleanField(default=False)
 
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
@@ -58,4 +56,4 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['nickname']
 
     def __str__(self):
-        return '[{}] {}'.format(self.level, self.username)
+        return '[{}] {}'.format(self.doctor_flag, self.nickname)
