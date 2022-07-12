@@ -51,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['nickname']
 
     def __str__(self):
-        return '[{}] {}'.format(self.doctor_flag, self.nickname)
+        return '[Doctor : {}] {}'.format(self.doctor_flag, self.nickname)
 
 
 class BaseModel(models.Model):
@@ -67,10 +67,16 @@ class Condition(BaseModel):
     eng_name = models.CharField(max_length=30)
     description = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return '{} ({})'.format(self.kr_name, self.eng_name)
+
 
 class Archive(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='archive')
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='archive')
+
+    def __str__(self):
+        return '[User : {}] {}'.format(self.user.nickname, self.condition.eng_name)
 
 
 class Question(BaseModel):
@@ -78,6 +84,9 @@ class Question(BaseModel):
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='question')
 
     content = models.TextField()
+
+    def __str__(self):
+        return '[{} : Q{}] - {}'.format(self.condition.eng_name, self.id, self.user.nickname)
 
 
 class Answer(BaseModel):
@@ -87,12 +96,18 @@ class Answer(BaseModel):
 
     content = models.TextField()
 
+    def __str__(self):
+        return '[{} : Q{}] - A{} by {}'.format(self.question.condition.eng_name, self.question.id, self.id, self.user.nickname)
+
 
 class ConditionMedia(BaseModel):
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='conditionMedia')
 
     img = models.ImageField(blank=True)
     main_flag = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '{} ({}) - (Main : {})'.format(self.condition.kr_name, self.condition.eng_name, self.main_flag)
 
 
 class QuestionMedia(BaseModel):
@@ -102,9 +117,15 @@ class QuestionMedia(BaseModel):
     img = models.ImageField(blank=True)
     main_flag = models.BooleanField(default=False)
 
+    def __str__(self):
+        return '[{} : Q{}] - {} (Main : {})'.format(self.condition.eng_name, self.question.id, self.question.user.nickname, self.main_flag)
+
 
 class AnswerMedia(BaseModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='answerMedia')
 
     img = models.ImageField(blank=True)
     main_flag = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '[{} : Q{}] - A{} by {} (Main : {})'.format(self.answer.question.condition.eng_name, self.answer.question.id, self.answer.id, self.answer.user.nickname, self.main_flag)
