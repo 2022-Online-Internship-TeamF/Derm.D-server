@@ -129,7 +129,7 @@ class QuestionMedia(BaseModel):
     main_flag = models.BooleanField(default=False)
 
     def __str__(self):
-        return '[{} : Q{}] - {} (Main : {})'.format(self.condition.eng_name, self.question.id, self.question.user.nickname, self.main_flag)
+        return '[{} : Q{}] - {} (Main : {})'.format(self.question.condition.eng_name, self.question.id, self.question.user.nickname, self.main_flag)
 
 
 class AnswerMedia(BaseModel):
