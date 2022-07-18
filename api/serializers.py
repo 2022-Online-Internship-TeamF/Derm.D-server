@@ -29,7 +29,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    answers = AnswerSerializer(many=True)
+    # answers = AnswerSerializer(many=True)
     questionMedia = QuestionMediaSerializer(many=True)
 
     class Meta:
