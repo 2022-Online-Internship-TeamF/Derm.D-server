@@ -47,11 +47,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nickname']
+    USERNAME_FIELD = 'nickname'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
-        return '[Doctor : {}] {}'.format(self.doctor_flag, self.nickname)
+        return '[Doctor : {}] {}'.format(self.doctor_flag, self.email)
 
 
 class BaseModel(models.Model):
@@ -90,8 +90,8 @@ class Question(BaseModel):
 
 
 class Answer(BaseModel):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answer')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answer')
     # hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='answer')
 
     content = models.TextField()
@@ -100,10 +100,22 @@ class Answer(BaseModel):
         return '[{} : Q{}] - A{} by {}'.format(self.question.condition.eng_name, self.question.id, self.id, self.user.nickname)
 
 
+def condition_media_path(instance, filename):
+    return f'{instance.condition.eng_name}/condition/{filename}'
+
+
+def question_media_path(instance, filename):
+    return f'{instance.question.condition.eng_name}/qna/{instance.question.id}/question/{filename}'
+
+
+def answer_media_path(instance, filename):
+    return f'{instance.answer.question.condition.eng_name}/qna/{instance.answer.question.id}/answer/{filename}'
+
+
 class ConditionMedia(BaseModel):
     condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='conditionMedia')
 
-    img = models.ImageField(blank=True)
+    img = models.ImageField(upload_to=condition_media_path, blank=True)
     main_flag = models.BooleanField(default=False)
 
     def __str__(self):
@@ -111,20 +123,19 @@ class ConditionMedia(BaseModel):
 
 
 class QuestionMedia(BaseModel):
-    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='questionMedia')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='questionMedia')
 
-    img = models.ImageField(blank=True)
+    img = models.ImageField(upload_to=question_media_path, blank=True)
     main_flag = models.BooleanField(default=False)
 
     def __str__(self):
-        return '[{} : Q{}] - {} (Main : {})'.format(self.condition.eng_name, self.question.id, self.question.user.nickname, self.main_flag)
+        return '[{} : Q{}] - {} (Main : {})'.format(self.question.condition.eng_name, self.question.id, self.question.user.nickname, self.main_flag)
 
 
 class AnswerMedia(BaseModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='answerMedia')
 
-    img = models.ImageField(blank=True)
+    img = models.ImageField(upload_to=answer_media_path, blank=True)
     main_flag = models.BooleanField(default=False)
 
     def __str__(self):
