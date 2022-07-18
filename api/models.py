@@ -47,11 +47,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nickname']
+    USERNAME_FIELD = 'nickname'
+    REQUIRED_FIELDS = ['email']
 
     def __str__(self):
-        return '[Doctor : {}] {}'.format(self.doctor_flag, self.nickname)
+        return '[Doctor : {}] {}'.format(self.doctor_flag, self.email)
 
 
 class BaseModel(models.Model):
