@@ -8,8 +8,14 @@ from django.http import Http404
 
 
 class QuestionListView(APIView):
+    def filter_object_or_404(self, condition_id):
+        try:
+            return Question.objects.filter(condition=condition_id)
+        except Question.DoesNotExist:
+            raise Http404
+
     def get(self, request, condition_id):
-        questions = Question.objects.filter(condition=condition_id)
+        questions = self.filter_object_or_404(condition_id)
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
