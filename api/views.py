@@ -18,3 +18,8 @@ class QuestionDetailView(APIView):
         question = Question.objects.get(condition=condition_id, pk=question_id)
         serializer = QuestionSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, condition_id, question_id):
+        question = Question.objects.get(condition=condition_id, pk=question_id)
+        question.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
