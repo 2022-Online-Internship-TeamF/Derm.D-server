@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import *
 
+class ConditionMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ConditionMedia
+        fields = ['img']
 
 class AnswerMediaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,9 +18,11 @@ class QuestionMediaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ConditionMediaSerializer(serializers.ModelSerializer):
+class ConditionSerializer(serializers.ModelSerializer):
+    conditionMedia = ConditionMediaSerializer(many=True)
+
     class Meta:
-        model = ConditionMedia
+        model = Condition
         fields = '__all__'
 
 
@@ -40,17 +46,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 class ArchiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Archive
-        fields = '__all__'
-
-
-class ConditionSerializer(serializers.ModelSerializer):
-    archives = ArchiveSerializer(many=True)
-    questions = QuestionSerializer(many=True)
-    conditionMedia = ConditionMediaSerializer(many=True)
-    questionMedia = QuestionMediaSerializer(many=True)
-
-    class Meta:
-        model = Condition
         fields = '__all__'
 
 
@@ -88,3 +83,9 @@ class LoginSerializer(serializers.Serializer):
 
 class idenSerializer(serializers.Serializer):
     nickname = serializers.CharField()
+
+
+class ConditionSerializere(serializers.ModelSerializer):
+    class Meta:
+        model = Condition
+        fields = '__all__'

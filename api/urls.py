@@ -1,7 +1,7 @@
 from django.urls import path
-from .views import *
 
 from . import views
+from .views import *
 
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -16,5 +16,6 @@ urlpatterns = [
     path('members/nickname/', UserViewAPI.as_view()),
     path('members/refresh/', TokenRefreshView.as_view()),  # 토큰 재발급하기
 
-    path('conditions', views.get_conditions_list, name='get_conditions_list'),
+    path('condition/', condition_listAPI.as_view()),
+    path('condition/<int:pk>/', condition_detailAPI.as_view())
 ]

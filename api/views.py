@@ -1,3 +1,5 @@
+from django.views.generic import DetailView
+
 from .models import *
 from .serializers import *
 
@@ -100,6 +102,8 @@ class RegisterAPI(APIView): # 회원가입
     def post(self, request):
         user = request.data
 
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
         if User.objects.filter(nickname=request.data['nickname']).exists():  # 닉네임 중복 체크
             return Response({
                 'status' : 400,
@@ -111,8 +115,6 @@ class RegisterAPI(APIView): # 회원가입
                 'message': '중복되는 이메일 입니다.'
             })
 
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
         serializer.save()
 
         return Response({
@@ -156,12 +158,25 @@ class UserViewAPI(APIView) : #jwt로 닉네임 확인
 
     return Response(serializer.data)
 
-def get_conditions_list(request): # 질환 확인
-    conditions_list = Condition.objects.order_by('pk')[:100] # 오름차순 정렬.
-    conditions_data = serializers.serialize("json", conditions_list, fields=('kr_name', 'eng_name', 'description'))
-    conditions_data = json.loads(conditions_data)
-    conditions_data = [{**item['fields'],**{"pk" : item['pk']}} for item in conditions_data]
-    conditions_data = {
-        "data" : conditions_data
-    }
-    return JsonResponse(conditions_data)
+class condition_listAPI(APIView):
+    def get(self,request):
+        conditions_list = Condition.objects.order_by('pk')[:22] # 오름차순 정렬.
+        conditions_data = serializers.serialize("json", conditions_list, fields=('kr_name', 'eng_name', 'description'))
+        conditions_data = json.loads(conditions_data)
+        conditions_data = [{**item['fields'],**{"pk" : item['pk']}} for item in conditions_data]
+        conditions_data = {
+           "data" : conditions_data
+        }
+        return JsonResponse(conditions_data)
+
+class condition_detailAPI(APIView):
+    def get_object_or_404(self, pk):
+        try:
+            return Condition.objects.get(pk=pk)
+        except Condition.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        condition = self.get_object_or_404(pk)
+        serializer = ConditionSerializer(condition)
+        return Response(serializer.data, status=status.HTTP_200_OK)
