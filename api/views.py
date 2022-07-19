@@ -1,4 +1,3 @@
-from .models import *
 from .serializers import *
 
 from rest_framework import status
@@ -6,17 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import Http404
 
-import jwt
-from rest_framework_simplejwt.exceptions import AuthenticationFailed
-from rest_framework.permissions import AllowAny
-from django.conf import settings
-
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from django.http import JsonResponse
-import json
-from django.core import serializers
 
 
 class QuestionListView(APIView):
@@ -30,6 +20,7 @@ class QuestionListView(APIView):
         questions = self.filter_object_or_404(condition_id)
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class QuestionDetailView(APIView):
     def get_object_or_404(self, condition_id, question_id):
@@ -49,119 +40,80 @@ class QuestionDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-class LoginAPI(APIView): # 로그인
-    permission_classes = (AllowAny,)
-    serializer_class = LoginSerializer
+class LoginAPI(APIView):  # 로그인
+    # noinspection PyMethodMayBeStatic
     def post(self, request):
         try:
-            data = request.data
-            serializer = LoginSerializer(data = data)
-            if serializer.is_valid():
+            data = request.data  # 입력된 데이터를 data 저장.
+            serializer = LoginSerializer(data=data)
+            if serializer.is_valid():  # 유효성 검사 -> serialize 저장 가능
                 nickname = serializer.data['nickname']
                 password = serializer.data['password']
 
-                user = authenticate(nickname=nickname, password=password)
+                user = authenticate(nickname=nickname, password=password)  # 회원 정보 확인.
 
-                if user is None:
+                if user is None:  # 회원 정보가 일치하지 않거나 없다면 오류 메시지
                     return Response({
-                        'status': 400,
-                        'message': '유저가 없거나 비밀번호 틀림',
-                    })
+                        'message': '유저가 없거나 비밀번호 틀림'
+                    }, status=status.HTTP_400_BAD_REQUEST)
 
-                refresh = RefreshToken.for_user(user)
-                refresh['nickname'] = user.nickname  # 확장
+                refresh = RefreshToken.for_user(user)  # 유저 정보로 refresh 토큰 생성
+                refresh['nickname'] = user.nickname  # refresh 토큰에 nickname 값 추가로 입력
 
-                res = Response()
-                res.set_cookie('jwt', str(refresh))
-                res.data = {
-                    'status': 200,
+                res = Response()  # cookie 넣기 위해 Response 사용
+                res.set_cookie('jwt', str(refresh))  # jwt이름의 쿠키 value refresh 토큰으로 설정
+
+                return Response({
                     'username': str(user.nickname),
                     'message': "로그인 완료",
                     'refresh': str(refresh),
                     'access': str(refresh.access_token)
-                }
-
-                return res
+                }, status=status.HTTP_200_OK)  # 위의 res.data 출력.
 
             return Response({
-                'status' : 400,
-                'message' : '잘못된 응답',
-                'data' : serializer.errors
-            })
+                'message': '잘못된 응답'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        except Exception as e:
+        except Exception as e:  # 예외 처리
             print(e)
 
-class RegisterAPI(APIView): # 회원가입
-    permission_classes = (AllowAny,)
-    serializer_class = RegistrationSerializer
 
+class RegisterAPI(APIView):  # 회원가입
+    # noinspection PyMethodMayBeStatic
     def post(self, request):
-        user = request.data
+        user = request.data  # 입력된 데이터를 user 저장.
 
+        serializer = RegistrationSerializer(data=user)
         if User.objects.filter(nickname=request.data['nickname']).exists():  # 닉네임 중복 체크
             return Response({
-                'status' : 400,
                 'message': '중복되는 닉네임 입니다.'
-            })
+            }, status=status.HTTP_400_BAD_REQUEST)
         elif User.objects.filter(email=request.data['email']).exists():  # 이메일 중복 체크
             return Response({
-                'status' : 400,
                 'message': '중복되는 이메일 입니다.'
-            })
-
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
+            }, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': '회원가입 완료',
+            }, status=status.HTTP_200_OK)
         return Response({
-            'status': 200,
-            'message': '회원가입 완료',
-        })
+            'message': '회원가입 실패'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
-class LogoutAPI(APIView): # 로그아웃
+
+class LogoutAPI(APIView):  # 로그아웃
+    # noinspection PyMethodMayBeStatic
     def post(self, request):
         try:
             refresh_token = request.COOKIES.get('jwt')
+            res = Response()
+            res.delete_cookie('jwt')
             token = RefreshToken(refresh_token)
             token.blacklist()
 
             return Response({
-                'status': 205,
                 'message': '로그아웃 성공',
-            })
-        except Exception as e:
-            return Response({
-                'status': 400,
-                'message': '로그아웃 실패',
-            })
-
-class UserViewAPI(APIView) : #jwt로 닉네임 확인
-  def get(self,request):
-    token = request.COOKIES.get('jwt')
-
-    if not token :
-      raise AuthenticationFailed('UnAuthenticated!')
-
-    try :
-      SECRET_KEY = getattr(settings,'SECRET_KEY','localhost')
-      payload = jwt.decode(token,SECRET_KEY,algorithms=['HS256'])
-
-    except jwt.ExpiredSignatureError:
-      raise AuthenticationFailed('UnAuthenticated!')
-
-    user = User.objects.filter(id=payload['user_id']).first()
-    serializer = idenSerializer(user)
-
-    return Response(serializer.data)
-
-def get_conditions_list(request): # 질환 확인
-    conditions_list = Condition.objects.order_by('pk')[:100] # 오름차순 정렬.
-    conditions_data = serializers.serialize("json", conditions_list, fields=('kr_name', 'eng_name', 'description'))
-    conditions_data = json.loads(conditions_data)
-    conditions_data = [{**item['fields'],**{"pk" : item['pk']}} for item in conditions_data]
-    conditions_data = {
-        "data" : conditions_data
-    }
-    return JsonResponse(conditions_data)
+            }, status=status.HTTP_205_RESET_CONTENT)
+        except Exception as e:  # 예외처리
+            print(e)
