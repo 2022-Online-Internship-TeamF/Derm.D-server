@@ -29,7 +29,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    # answers = AnswerSerializer(many=True)
+    answers = AnswerSerializer(many=True)
     questionMedia = QuestionMediaSerializer(many=True)
 
     class Meta:
@@ -62,29 +62,3 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
-
-class RegistrationSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = User
-        fields = ['nickname', 'password', 'email', 'doctor_flag']
-
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
-
-    def create(self, validated_data):
-        password = validated_data.pop('password', None)
-        instance = self.Meta.model(**validated_data)
-        if password is not None:
-            # provide django, password will be hashing!
-            instance.set_password(password)
-        instance.save()
-        return instance
-
-class LoginSerializer(serializers.Serializer):
-    nickname = serializers.CharField()
-    password = serializers.CharField()
-
-class idenSerializer(serializers.Serializer):
-    nickname = serializers.CharField()
