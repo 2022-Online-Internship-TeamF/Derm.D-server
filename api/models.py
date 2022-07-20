@@ -51,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['email']
 
     def __str__(self):
-        return '[Doctor : {}] {}'.format(self.doctor_flag, self.email)
+        return '[Doctor : {}] {}'.format(self.doctor_flag, self.nickname)
 
 
 class BaseModel(models.Model):
