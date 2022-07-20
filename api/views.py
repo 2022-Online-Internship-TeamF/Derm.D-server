@@ -1,3 +1,4 @@
+from .models import *
 from .serializers import *
 
 from rest_framework import status
@@ -45,7 +46,7 @@ class LoginAPI(APIView):  # 로그인
     def post(self, request):
         try:
             data = request.data  # 입력된 데이터를 data 저장.
-            serializer = LoginSerializer(data=data)
+            serializer = UserSerializer(data=data)
             if serializer.is_valid():  # 유효성 검사 -> serialize 저장 가능
                 nickname = serializer.data['nickname']
                 password = serializer.data['password']
