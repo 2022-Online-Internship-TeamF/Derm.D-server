@@ -80,3 +80,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    nickname = serializers.CharField()
+    password = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['nickname', 'password']

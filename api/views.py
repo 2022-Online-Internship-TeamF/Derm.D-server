@@ -1,4 +1,5 @@
-from .models import *
+import jwt as jwt
+
 from .serializers import *
 
 from rest_framework import status
@@ -8,6 +9,7 @@ from django.http import Http404
 
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings
 
 
 class QuestionListView(APIView):
@@ -46,7 +48,7 @@ class LoginAPI(APIView):  # 로그인
     def post(self, request):
         try:
             data = request.data  # 입력된 데이터를 data 저장.
-            serializer = UserSerializer(data=data)
+            serializer = LoginSerializer(data=data)
             if serializer.is_valid():  # 유효성 검사 -> serialize 저장 가능
                 nickname = serializer.data['nickname']
                 password = serializer.data['password']
@@ -64,43 +66,48 @@ class LoginAPI(APIView):  # 로그인
                 res = Response()  # cookie 넣기 위해 Response 사용
                 res.set_cookie('jwt', str(refresh))  # jwt이름의 쿠키 value refresh 토큰으로 설정
 
-                return Response({
+                res.data = {
                     'username': str(user.nickname),
                     'message': "로그인 완료",
                     'refresh': str(refresh),
                     'access': str(refresh.access_token)
-                }, status=status.HTTP_200_OK)  # 위의 res.data 출력.
+                }
+                return res
 
             return Response({
                 'message': '잘못된 응답'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        except Exception as e:  # 예외 처리
-            print(e)
+        except Exception as e:
+            return Response({
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterAPI(APIView):  # 회원가입
     # noinspection PyMethodMayBeStatic
     def post(self, request):
-        user = request.data  # 입력된 데이터를 user 저장.
+        try:
+            user = request.data  # 입력된 데이터를 user 저장.
 
-        serializer = RegistrationSerializer(data=user)
-        if User.objects.filter(nickname=request.data['nickname']).exists():  # 닉네임 중복 체크
-            return Response({
-                'message': '중복되는 닉네임 입니다.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        elif User.objects.filter(email=request.data['email']).exists():  # 이메일 중복 체크
-            return Response({
-                'message': '중복되는 이메일 입니다.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-        if serializer.is_valid():
+            serializer = RegistrationSerializer(data=user)
+            if User.objects.filter(nickname=request.data['nickname']).exists():  # 닉네임 중복 체크
+                return Response({
+                    'message': '중복되는 닉네임 입니다.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            elif User.objects.filter(email=request.data['email']).exists():  # 이메일 중복 체크
+                return Response({
+                    'message': '중복되는 이메일 입니다.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            serializer.is_valid()
             serializer.save()
             return Response({
                 'message': '회원가입 완료',
             }, status=status.HTTP_200_OK)
-        return Response({
-            'message': '회원가입 실패'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:  # 예외처리
+            return Response({
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LogoutAPI(APIView):  # 로그아웃
@@ -108,13 +115,46 @@ class LogoutAPI(APIView):  # 로그아웃
     def post(self, request):
         try:
             refresh_token = request.COOKIES.get('jwt')
+            if not refresh_token:
+                return Response({
+                    'message': '토큰이 없습니다.',
+                }, status=status.HTTP_400_BAD_REQUEST)
             res = Response()
             res.delete_cookie('jwt')
             token = RefreshToken(refresh_token)
             token.blacklist()
 
-            return Response({
-                'message': '로그아웃 성공',
-            }, status=status.HTTP_205_RESET_CONTENT)
+            res.data = {'message': "로그아웃 완료"}
+
+            return res
         except Exception as e:  # 예외처리
-            print(e)
+            return Response({
+                'message': str(e),
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TokenNickname(APIView):  # jwt로 닉네임 확인
+    # noinspection PyMethodMayBeStatic
+    def get(self, request):
+        refresh_token = request.COOKIES.get('jwt')
+
+        if not refresh_token:
+            return Response({
+                'message': '토큰이 없습니다.',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            secret_key = getattr(settings, 'SECRET_KEY', 'localhost')
+            payload = jwt.decode(refresh_token, secret_key, algorithms=['HS256'])
+
+        except jwt.ExpiredSignatureError:
+            return Response({
+                'message': '서명이 만료되었습니다.',
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.filter(id=payload['user_id']).first()
+
+        return Response({
+            'message': '닉네임 가져오기 성공',
+            'nickname': str(user.nickname),
+        }, status=status.HTTP_200_OK)
