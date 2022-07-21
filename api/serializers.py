@@ -55,16 +55,15 @@ class ConditionSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    archives = ArchiveSerializer(many=True)
-    questions = QuestionSerializer(many=True)
-    answers = AnswerSerializer(many=True)
-
+    # archives = ArchiveSerializer(many=True)
+    # questions = QuestionSerializer(many=True)
+    # answers = AnswerSerializer(many=True)
     class Meta:
         model = User
         fields = '__all__'
 
-class RegistrationSerializer(serializers.ModelSerializer):
 
+class RegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['nickname', 'password', 'email', 'doctor_flag']
@@ -82,9 +81,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class LoginSerializer(serializers.Serializer):
+
+class LoginSerializer(serializers.ModelSerializer):
     nickname = serializers.CharField()
     password = serializers.CharField()
 
-class idenSerializer(serializers.Serializer):
-    nickname = serializers.CharField()
+    class Meta:
+        model = User
+        fields = ['nickname', 'password']
