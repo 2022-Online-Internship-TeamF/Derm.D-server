@@ -5,6 +5,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 
 
 urlpatterns = [
+    path('user', UserDetailView.as_view()),
+
     path('condition/<int:condition_id>/question/', QuestionListView.as_view()),
     path('condition/<int:condition_id>/question/<int:question_id>/', QuestionDetailView.as_view()),
 

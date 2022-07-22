@@ -5,11 +5,31 @@ from .serializers import *
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.http import Http404
 
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
+
+
+# 사용자 정보
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        cur_user = request.user
+
+        if cur_user.is_anonymous:
+            return Response({
+                "user": "User Not Found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = UserSerializer(request.user)
+            return Response({
+                "user": serializer.data,
+            }, status=status.HTTP_200_OK)
 
 
 class QuestionListView(APIView):
