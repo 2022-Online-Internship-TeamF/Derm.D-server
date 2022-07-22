@@ -148,3 +148,25 @@ class LogoutAPI(APIView):  # 로그아웃
             return Response({
                 'message': str(e),
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ConditionListView(APIView):
+    # noinspection PyMethodMayBeStatic
+    def get(self, request):
+        conditions = Condition.objects.all()
+        serializer = ConditionSerializer(conditions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ConditionDetailView(APIView):
+    # noinspection PyMethodMayBeStatic
+    def get_object_or_404(self, pk):
+        try:
+            return Condition.objects.get(pk=pk)
+        except Condition.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        condition = self.get_object_or_404(pk)
+        serializer = ConditionSerializer(condition)
+        return Response(serializer.data, status=status.HTTP_200_OK)

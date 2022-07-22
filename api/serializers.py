@@ -44,14 +44,18 @@ class ArchiveSerializer(serializers.ModelSerializer):
 
 
 class ConditionSerializer(serializers.ModelSerializer):
-    archives = ArchiveSerializer(many=True)
-    questions = QuestionSerializer(many=True)
-    conditionMedia = ConditionMediaSerializer(many=True)
-    questionMedia = QuestionMediaSerializer(many=True)
+    conditionMedia = serializers.SerializerMethodField(method_name='get_condition_media')
+
+    # main_flag인 이미지만 가져오는 get
+    # noinspection PyMethodMayBeStatic
+    def get_condition_media(self, condition):
+        qs = ConditionMedia.objects.filter(main_flag=True, condition=condition)
+        serializer = ConditionMediaSerializer(instance=qs, many=True)
+        return serializer.data
 
     class Meta:
         model = Condition
-        fields = '__all__'
+        fields = ['kr_name', 'eng_name', 'description', 'conditionMedia']
 
 
 class UserSerializer(serializers.ModelSerializer):
