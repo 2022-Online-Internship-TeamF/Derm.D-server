@@ -37,21 +37,29 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ArchiveSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Archive
-        fields = '__all__'
-
-
 class ConditionSerializer(serializers.ModelSerializer):
-    archives = ArchiveSerializer(many=True)
-    questions = QuestionSerializer(many=True)
+    # archives = ArchiveSerializer(many=True)
+    # questions = QuestionSerializer(many=True)
     conditionMedia = ConditionMediaSerializer(many=True)
-    questionMedia = QuestionMediaSerializer(many=True)
+    # questionMedia = QuestionMediaSerializer(many=True)
 
     class Meta:
         model = Condition
         fields = '__all__'
+
+
+class ArchiveSerializer(serializers.ModelSerializer):
+    condition = ConditionSerializer()
+
+    class Meta:
+        model = Archive
+        fields = '__all__'
+
+    def create(self, validated_data):
+        instance = self.Meta.model(**validated_data)
+        instance.user = validated_data.get('user', instance.user)
+        instance.condition = validated_data.get('condition', instance.condition)
+        return Archive.objects.create(instance)
 
 
 class UserSerializer(serializers.ModelSerializer):

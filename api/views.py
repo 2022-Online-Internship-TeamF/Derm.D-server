@@ -178,3 +178,65 @@ class TokenNickname(APIView):  # jwt로 닉네임 확인
             'message': '닉네임 가져오기 성공',
             'nickname': str(user.nickname),
         }, status=status.HTTP_200_OK)
+
+
+# 아카이브 리스트 출력 및 저장
+class ArchiveListView(APIView):
+    # noinspection PyMethodMayBeStatic
+    def get_object_or_404(self, name):
+        try:
+            return Condition.objects.get(kr_name=name).pk
+        except Condition.DoesNotExist:
+            raise Http404
+
+    # noinspection PyMethodMayBeStatic
+    def filter_object_or_404(self, id):
+        try:
+            return Archive.objects.filter(user=id)
+        except Archive.DoesNotExist:
+            raise Http404
+
+    def get(self, request):
+        user = request.user
+        archives = self.filter_object_or_404(user.id)
+        serializer = ArchiveSerializer(archives, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        user = request.user
+        data = request.data
+        data["user"] = user.id
+        data["condition"] = self.get_object_or_404(data["condition"])
+        if Archive.objects.filter(condition=request.data['condition']).exists():  # 같은 증상 중복 체크
+            return Response({
+                'message': '중복되는 아카이브가 있습니다.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        serializer = ArchiveSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# 아카이브 삭제기능
+class ArchiveDeleteView(APIView):
+    # noinspection PyMethodMayBeStatic
+    def get_object_or_404(self, archive_id):
+        try:
+            return Archive.objects.get(pk=archive_id)
+        except Archive.DoesNotExist:
+            raise Http404
+
+    def delete(self, request, archive_id):
+        archive = self.get_object_or_404(archive_id)
+        archive.delete()
+        return Response({
+            'message': '삭제 성공'
+        }, status=status.HTTP_204_NO_CONTENT)
+
+
+class getID(APIView):
+    # noinspection PyMethodMayBeStatic
+    def get(self, request):
+        Users = User.objects.all()
+        serializer = UserSerializer(Users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
