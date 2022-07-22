@@ -13,7 +13,6 @@ urlpatterns = [
     path('members/register/', RegisterAPI.as_view()),
     path('members/logout/', LogoutAPI.as_view()),
     path('members/refresh/', TokenRefreshView.as_view()),  # access 토큰 재 발급
-    path('members/nickname/', TokenNickname.as_view()),  # 쿠키(토큰)에서 닉네임 가져오기.
 
     path('condition/', ConditionListView.as_view()),
     path('condition/<int:pk>/', ConditionDetailView.as_view())
