@@ -59,12 +59,6 @@ class ArchiveSerializer(serializers.ModelSerializer):
         model = Archive
         fields = '__all__'
 
-    def create(self, validated_data):
-        instance = self.Meta.model(**validated_data)
-        instance.user = validated_data.get('user', instance.user)
-        instance.condition = validated_data.get('condition', instance.condition)
-        return Archive.objects.create(instance)
-
 
 class UserSerializer(serializers.ModelSerializer):
     # archives = ArchiveSerializer(many=True)
