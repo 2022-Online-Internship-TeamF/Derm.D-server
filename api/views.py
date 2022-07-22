@@ -1,5 +1,3 @@
-import jwt as jwt
-
 from .serializers import *
 
 from rest_framework import status
@@ -10,7 +8,6 @@ from django.http import Http404
 
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
 
 
 # 사용자 정보
@@ -153,31 +150,21 @@ class LogoutAPI(APIView):  # 로그아웃
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class TokenNickname(APIView):  # jwt로 닉네임 확인
+class ConditionListView(APIView):
     # noinspection PyMethodMayBeStatic
     def get(self, request):
-        refresh_token = request.COOKIES.get('jwt')
+        conditions = Condition.objects.all()
+        serializer = ConditionSerializer(conditions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        if not refresh_token:
-            return Response({
-                'message': '토큰이 없습니다.',
-            }, status=status.HTTP_400_BAD_REQUEST)
 
+class ConditionDetailView(APIView):
+    # noinspection PyMethodMayBeStatic
+    def get_object_or_404(self, pk):
         try:
-            secret_key = getattr(settings, 'SECRET_KEY', 'localhost')
-            payload = jwt.decode(refresh_token, secret_key, algorithms=['HS256'])
-
-        except jwt.ExpiredSignatureError:
-            return Response({
-                'message': '서명이 만료되었습니다.',
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        user = User.objects.filter(id=payload['user_id']).first()
-
-        return Response({
-            'message': '닉네임 가져오기 성공',
-            'nickname': str(user.nickname),
-        }, status=status.HTTP_200_OK)
+            return Condition.objects.get(pk=pk)
+        except Condition.DoesNotExist:
+            raise Http404
 
 
 # 아카이브 리스트 출력 및 저장
@@ -211,7 +198,7 @@ class ArchiveListView(APIView):
             return Response({
                 'message': '중복되는 아카이브가 있습니다.'
             }, status=status.HTTP_400_BAD_REQUEST)
-        serializer = ArchiveSerializer(data=data)
+        serializer = ArchiveAddSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -232,11 +219,3 @@ class ArchiveDeleteView(APIView):
         return Response({
             'message': '삭제 성공'
         }, status=status.HTTP_204_NO_CONTENT)
-
-
-class getID(APIView):
-    # noinspection PyMethodMayBeStatic
-    def get(self, request):
-        Users = User.objects.all()
-        serializer = UserSerializer(Users, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
