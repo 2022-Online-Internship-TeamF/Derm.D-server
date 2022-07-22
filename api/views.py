@@ -1,5 +1,3 @@
-import jwt as jwt
-
 from .serializers import *
 
 from rest_framework import status
@@ -10,7 +8,6 @@ from django.http import Http404
 
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
 
 
 # 사용자 정보
@@ -151,30 +148,3 @@ class LogoutAPI(APIView):  # 로그아웃
             return Response({
                 'message': str(e),
             }, status=status.HTTP_400_BAD_REQUEST)
-
-
-class TokenNickname(APIView):  # jwt로 닉네임 확인
-    # noinspection PyMethodMayBeStatic
-    def get(self, request):
-        refresh_token = request.COOKIES.get('jwt')
-
-        if not refresh_token:
-            return Response({
-                'message': '토큰이 없습니다.',
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            secret_key = getattr(settings, 'SECRET_KEY', 'localhost')
-            payload = jwt.decode(refresh_token, secret_key, algorithms=['HS256'])
-
-        except jwt.ExpiredSignatureError:
-            return Response({
-                'message': '서명이 만료되었습니다.',
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        user = User.objects.filter(id=payload['user_id']).first()
-
-        return Response({
-            'message': '닉네임 가져오기 성공',
-            'nickname': str(user.nickname),
-        }, status=status.HTTP_200_OK)
