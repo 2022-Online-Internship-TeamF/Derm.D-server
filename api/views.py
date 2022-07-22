@@ -166,6 +166,11 @@ class ConditionDetailView(APIView):
         except Condition.DoesNotExist:
             raise Http404
 
+    def get(self, request, pk):
+        condition = self.get_object_or_404(pk)
+        serializer = ConditionSerializer(condition)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # 아카이브 리스트 출력 및 저장
 class ArchiveListView(APIView):
