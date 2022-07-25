@@ -63,6 +63,7 @@ class BaseModel(models.Model):
 
 
 class Condition(BaseModel):
+    idx = models.IntegerField()
     kr_name = models.CharField(max_length=30, blank=True)
     eng_name = models.CharField(max_length=30)
     definition = models.TextField(null=True, blank=True)
