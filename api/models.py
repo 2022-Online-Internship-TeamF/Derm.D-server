@@ -63,9 +63,36 @@ class BaseModel(models.Model):
 
 
 class Condition(BaseModel):
+
+    CONDITION_CHOICE = [
+        ('moles', 'Moles'),
+        ('nevi', 'Nevi'),
+        ('melanoma', 'Melanoma'),
+        ('nail-disease', 'Nail Disease'),
+        ('nail-fungus', 'Nail Fungus'),
+        ('acne', 'Acne'),
+        ('rosacea', 'Rosacea'),
+        ('actinic-keratosis', 'Actinic Keratosis'),
+        ('atopic-dermatitis', 'Atopic Dermatitis'),
+        ('bacteria-infection', 'Bacteria Infection'),
+        ('basal_insect', 'Basal Insect'),
+        ('bullous', 'Bullous'),
+        ('dermatofibroma', 'Dermatofibroma'),
+        ('eczema', 'Eczema'),
+        ('hemangloma', 'Hemangloma'),
+        ('herpes', 'Herpes'),
+        ('keratoses', 'Keratoses'),
+        ('lichen-planus', 'Lichen Planus'),
+        ('lupus', 'Lupus'),
+        ('psoriasis', 'Psoriasis'),
+        ('tinea', 'Tinea'),
+        ('vasculitis', 'Vasculitis'),
+        ('warts', 'Warts'),
+    ]
+
     idx = models.IntegerField()
     kr_name = models.CharField(max_length=30, blank=True)
-    eng_name = models.CharField(max_length=30)
+    eng_name = models.CharField(max_length=30, choices=CONDITION_CHOICE)
     definition = models.TextField(null=True, blank=True)
     cause = models.TextField(null=True, blank=True)
     treatment = models.TextField(null=True, blank=True)
@@ -132,7 +159,6 @@ class ConditionMedia(BaseModel):
 
 
 class QuestionMedia(BaseModel):
-    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='condition_questionmedia')
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_questionmedia')
 
     img = models.ImageField(upload_to=question_media_path, blank=True)
