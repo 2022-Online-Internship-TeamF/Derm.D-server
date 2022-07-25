@@ -21,20 +21,37 @@ class ConditionMediaSerializer(serializers.ModelSerializer):
 
 
 class AnswerSerializer(serializers.ModelSerializer):
-    answerMedia = AnswerMediaSerializer(many=True)
+    answer_answermedia = AnswerMediaSerializer(many=True)
 
     class Meta:
         model = Answer
-        fields = '__all__'
+        fields = [
+            'id',
+            'question',
+            'user',
+            'content',
+            'created_at',
+            'modified_at',
+            'answer_answermedia',
+        ]
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    # answers = AnswerSerializer(many=True)
-    questionMedia = QuestionMediaSerializer(many=True)
+    question_answer = AnswerSerializer(many=True)
+    question_questionmedia = QuestionMediaSerializer(many=True)
 
     class Meta:
         model = Question
-        fields = '__all__'
+        fields = [
+            'id',
+            'user',
+            'condition',
+            'content',
+            'created_at',
+            'modified_at',
+            'question_questionmedia',
+            'question_answer',
+        ]
 
 
 class ArchiveSerializer(serializers.ModelSerializer):
@@ -44,27 +61,47 @@ class ArchiveSerializer(serializers.ModelSerializer):
 
 
 class ConditionSerializer(serializers.ModelSerializer):
-    conditionMedia = serializers.SerializerMethodField(method_name='get_condition_media')
-
-    # main_flag인 이미지만 가져오는 get
-    # noinspection PyMethodMayBeStatic
-    def get_condition_media(self, condition):
-        qs = ConditionMedia.objects.filter(main_flag=True, condition=condition)
-        serializer = ConditionMediaSerializer(instance=qs, many=True)
-        return serializer.data
+    condition_question = QuestionSerializer(many=True)
+    condition_conditionmedia = ConditionMediaSerializer(many=True)
+    condition_questionmedia = QuestionMediaSerializer(many=True)
 
     class Meta:
         model = Condition
-        fields = ['kr_name', 'eng_name', 'description', 'conditionMedia']
+        fields = [
+            'id',
+            'kr_name',
+            'eng_name',
+            'definition',
+            'cause',
+            'treatment',
+            'prevention',
+            'guide',
+            'summary',
+            'source',
+            'symtom',
+            'progress',
+            'etc',
+            'condition_conditionmedia',
+            'condition_question',
+        ]
 
 
 class UserSerializer(serializers.ModelSerializer):
-    # archives = ArchiveSerializer(many=True)
-    # questions = QuestionSerializer(many=True)
-    # answers = AnswerSerializer(many=True)
+    user_archive = ArchiveSerializer(many=True)
+    user_question = QuestionSerializer(many=True)
+    user_answer = AnswerSerializer(many=True)
+
     class Meta:
         model = User
-        fields = '__all__'
+        fields = [
+            'id',
+            'nickname',
+            'email',
+            'doctor_flag',
+            'user_archive',
+            'user_question',
+            'user_answer',
+        ]
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
