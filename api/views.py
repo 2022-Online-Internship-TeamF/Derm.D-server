@@ -85,6 +85,40 @@ class QuestionDetailView(APIView):
         serializer = QuestionSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def put(self, request, condition_name, question_id):
+        cur_question = self.get_object_or_404(condition_name, question_id)
+        cur_question_media = QuestionMedia.objects.filter(question__id=question_id)
+
+        user = User.objects.get(id=request.user.id)
+        condition = Condition.objects.get(eng_name=condition_name)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "condition": condition,
+            "content": content,
+        }
+
+        if cur_question.user == request.user:
+
+            form = QuestionForm(data=data, instance=cur_question)
+
+            if form.is_valid():
+                question = form.save()
+
+                for index, file in enumerate(request.FILES.getlist('media')):
+                    cur_question_media.delete()
+
+                    question_media = QuestionMedia()
+                    question_media.question = question
+                    question_media.img = file
+                    if index is 0:
+                        question_media.main_flag = True
+                    question_media.save()
+
+                return Response("Question Edited", status=status.HTTP_201_CREATED)
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def delete(self, request, condition_name, question_id):
         question = self.get_object_or_404(condition_name, question_id)
 
