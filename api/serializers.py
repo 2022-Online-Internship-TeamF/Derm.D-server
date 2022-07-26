@@ -63,7 +63,6 @@ class ArchiveSerializer(serializers.ModelSerializer):
 class ConditionSerializer(serializers.ModelSerializer):
     condition_question = QuestionSerializer(many=True)
     condition_conditionmedia = ConditionMediaSerializer(many=True)
-    condition_questionmedia = QuestionMediaSerializer(many=True)
 
     class Meta:
         model = Condition
