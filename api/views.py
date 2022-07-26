@@ -129,6 +129,19 @@ class QuestionDetailView(APIView):
         return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
 
 
+class AnswerListView(APIView):
+    def filter_object_or_404(self, condition_name, question_id):
+        try:
+            return Answer.objects.filter(question__condition__eng_name=condition_name, question__id=question_id)
+        except Question.DoesNotExist:
+            raise Http404
+
+    def get(self, request, condition_name, question_id):
+        answers = self.filter_object_or_404(condition_name, question_id)
+        serializer = AnswerSerializer(answers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class LoginView(APIView):  # 로그인
     def post(self, request):
         try:
