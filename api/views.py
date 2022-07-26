@@ -141,6 +141,39 @@ class AnswerListView(APIView):
         serializer = AnswerSerializer(answers, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request, condition_name, question_id):
+
+        try:
+            user = User.objects.get(id=request.user.id, doctor_flag=True)
+
+        except:
+            return Response({"This user is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        question = Question.objects.get(id=question_id)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "question": question,
+            "content": content,
+        }
+
+        form = AnswerForm(data=data)
+
+        if form.is_valid():
+            answer = form.save()
+
+            for index, file in enumerate(request.FILES.getlist('media')):
+                answer_media = AnswerMedia()
+                answer_media.answer = answer
+                answer_media.img = file
+                if index is 0:
+                    answer_media.main_flag = True
+                answer_media.save()
+
+            return Response("Answer Submitted", status=status.HTTP_201_CREATED)
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AnswerDetailView(APIView):
     def get_object_or_404(self, condition_name, question_id, answer_id):
