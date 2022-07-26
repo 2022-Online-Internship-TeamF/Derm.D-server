@@ -25,7 +25,11 @@ class UserDetailView(APIView):
         else:
             serializer = UserSerializer(request.user)
             return Response({
-                "user": serializer.data,
+                "user": {
+                    "nickname": serializer.data["nickname"],
+                    "email": serializer.data["email"],
+                    "doctor": serializer.data["doctor_flag"],
+                }
             }, status=status.HTTP_200_OK)
 
 
@@ -164,6 +168,4 @@ class ConditionDetailView(APIView):
             raise Http404
 
     def get(self, request, pk):
-        condition = self.get_object_or_404(pk)
-        serializer = ConditionSerializer(condition)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        condition = self.get_object_or
