@@ -133,12 +133,25 @@ class AnswerListView(APIView):
     def filter_object_or_404(self, condition_name, question_id):
         try:
             return Answer.objects.filter(question__condition__eng_name=condition_name, question__id=question_id)
-        except Question.DoesNotExist:
+        except Answer.DoesNotExist:
             raise Http404
 
     def get(self, request, condition_name, question_id):
         answers = self.filter_object_or_404(condition_name, question_id)
         serializer = AnswerSerializer(answers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AnswerDetailView(APIView):
+    def get_object_or_404(self, condition_name, question_id, answer_id):
+        try:
+            return Answer.objects.get(question__condition__eng_name=condition_name, question__id=question_id, id=answer_id)
+        except Answer.DoesNotExist:
+            raise Http404
+
+    def get(self, request, condition_name, question_id, answer_id):
+        answer = self.get_object_or_404(condition_name, question_id, answer_id)
+        serializer = AnswerSerializer(answer)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
