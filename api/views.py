@@ -125,7 +125,7 @@ class QuestionDetailView(APIView):
         if question.user == request.user:
             question.delete()
 
-            return Response(f"Q{question_id} Deleted", status=status.HTTP_204_NO_CONTENT)
+            return Response(f"Q{question_id} Deleted", status=status.HTTP_200_OK)
         return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -238,12 +238,9 @@ class AnswerDetailView(APIView):
         answer = self.get_object_or_404(condition_name, question_id, answer_id)
 
         if answer.user == request.user:
-            answer_media = AnswerMedia.objects.filter(answer__id=answer_id)
-
-            answer_media.delete()
             answer.delete()
 
-            return Response(f"A{answer_id} Deleted", status=status.HTTP_204_NO_CONTENT)
+            return Response(f"A{answer_id} Deleted", status=status.HTTP_200_OK)
         return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
 
 
