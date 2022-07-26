@@ -61,14 +61,13 @@ class ArchiveSerializer(serializers.ModelSerializer):
 
 
 class ConditionSerializer(serializers.ModelSerializer):
-    condition_question = QuestionSerializer(many=True)
     condition_conditionmedia = ConditionMediaSerializer(many=True)
-    condition_questionmedia = QuestionMediaSerializer(many=True)
 
     class Meta:
         model = Condition
         fields = [
             'id',
+            'idx',
             'kr_name',
             'eng_name',
             'definition',
@@ -82,7 +81,16 @@ class ConditionSerializer(serializers.ModelSerializer):
             'progress',
             'etc',
             'condition_conditionmedia',
-            'condition_question',
+        ]
+
+
+class ConditionMiniSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Condition
+        fields = [
+            'kr_name',
+            'eng_name',
         ]
 
 

@@ -1,12 +1,12 @@
 from .serializers import *
 
+from django.http import Http404
+from django.contrib.auth import authenticate
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.http import Http404
-
-from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -25,7 +25,11 @@ class UserDetailView(APIView):
         else:
             serializer = UserSerializer(request.user)
             return Response({
-                "user": serializer.data,
+                "user": {
+                    "nickname": serializer.data["nickname"],
+                    "email": serializer.data["email"],
+                    "doctor": serializer.data["doctor_flag"],
+                }
             }, status=status.HTTP_200_OK)
 
 
@@ -60,8 +64,7 @@ class QuestionDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class LoginAPI(APIView):  # 로그인
-    # noinspection PyMethodMayBeStatic
+class LoginView(APIView):  # 로그인
     def post(self, request):
         try:
             data = request.data  # 입력된 데이터를 data 저장.
@@ -101,8 +104,7 @@ class LoginAPI(APIView):  # 로그인
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RegisterAPI(APIView):  # 회원가입
-    # noinspection PyMethodMayBeStatic
+class RegisterView(APIView):  # 회원가입
     def post(self, request):
         try:
             user = request.data  # 입력된 데이터를 user 저장.
@@ -127,8 +129,7 @@ class RegisterAPI(APIView):  # 회원가입
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LogoutAPI(APIView):  # 로그아웃
-    # noinspection PyMethodMayBeStatic
+class LogoutView(APIView):  # 로그아웃
     def post(self, request):
         try:
             refresh_token = request.COOKIES.get('jwt')
@@ -151,22 +152,20 @@ class LogoutAPI(APIView):  # 로그아웃
 
 
 class ConditionListView(APIView):
-    # noinspection PyMethodMayBeStatic
     def get(self, request):
         conditions = Condition.objects.all()
-        serializer = ConditionSerializer(conditions, many=True)
+        serializer = ConditionMiniSerializer(conditions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ConditionDetailView(APIView):
-    # noinspection PyMethodMayBeStatic
-    def get_object_or_404(self, pk):
+    def get_object_or_404(self, condition_name):
         try:
-            return Condition.objects.get(pk=pk)
+            return Condition.objects.get(eng_name=condition_name)
         except Condition.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk):
-        condition = self.get_object_or_404(pk)
+    def get(self, request, condition_name):
+        condition = self.get_object_or_404(condition_name)
         serializer = ConditionSerializer(condition)
         return Response(serializer.data, status=status.HTTP_200_OK)
