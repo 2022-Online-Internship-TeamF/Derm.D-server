@@ -87,10 +87,12 @@ class QuestionDetailView(APIView):
 
     def delete(self, request, condition_name, question_id):
         question = self.get_object_or_404(condition_name, question_id)
-        question.delete()
-        return Response({
-            f"Q{question_id} Deleted"
-        }, status=status.HTTP_204_NO_CONTENT)
+
+        if question.user == request.user:
+            question.delete()
+
+            return Response(f"Q{question_id} Deleted", status=status.HTTP_204_NO_CONTENT)
+        return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):  # 로그인
