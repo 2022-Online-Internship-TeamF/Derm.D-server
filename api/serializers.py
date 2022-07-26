@@ -37,8 +37,8 @@ class AnswerSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    question_answer = AnswerSerializer(many=True)
     question_questionmedia = QuestionMediaSerializer(many=True)
+    # question_answer = AnswerSerializer(many=True)
 
     class Meta:
         model = Question
@@ -50,7 +50,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             'created_at',
             'modified_at',
             'question_questionmedia',
-            'question_answer',
+            # 'question_answer',
         ]
 
 

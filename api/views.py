@@ -1,4 +1,6 @@
 from .serializers import *
+from .models import *
+from .forms import *
 
 from django.http import Http404
 from django.contrib.auth import authenticate
@@ -15,10 +17,7 @@ class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        cur_user = request.user
-
-        if cur_user.is_anonymous:
+        if request.user.is_anonymous:
             return Response({
                 "user": "User Not Found"
             }, status=status.HTTP_404_NOT_FOUND)
@@ -34,34 +33,100 @@ class UserDetailView(APIView):
 
 
 class QuestionListView(APIView):
-    def filter_object_or_404(self, condition_id):
+    def filter_object_or_404(self, condition_name):
         try:
-            return Question.objects.filter(condition=condition_id)
+            return Question.objects.filter(condition__eng_name=condition_name)
         except Question.DoesNotExist:
             raise Http404
 
-    def get(self, request, condition_id):
-        questions = self.filter_object_or_404(condition_id)
+    def get(self, request, condition_name):
+        questions = self.filter_object_or_404(condition_name)
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request, condition_name):
+
+        user = User.objects.get(id=request.user.id)
+        condition = Condition.objects.get(eng_name=condition_name)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "condition": condition,
+            "content": content,
+        }
+
+        form = QuestionForm(data=data)
+
+        if form.is_valid():
+            question = form.save()
+
+            for index, file in enumerate(request.FILES.getlist('media')):
+                question_media = QuestionMedia()
+                question_media.question = question
+                question_media.img = file
+                if index is 0:
+                    question_media.main_flag = True
+                question_media.save()
+
+            return Response("Question Submitted", status=status.HTTP_201_CREATED)
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class QuestionDetailView(APIView):
-    def get_object_or_404(self, condition_id, question_id):
+    def get_object_or_404(self, condition_name, question_id):
         try:
-            return Question.objects.get(condition=condition_id, pk=question_id)
+            return Question.objects.get(condition__eng_name=condition_name, id=question_id)
         except Question.DoesNotExist:
             raise Http404
 
-    def get(self, request, condition_id, question_id):
-        question = self.get_object_or_404(condition_id, question_id)
+    def get(self, request, condition_name, question_id):
+        question = self.get_object_or_404(condition_name, question_id)
         serializer = QuestionSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, condition_id, question_id):
-        question = self.get_object_or_404(condition_id, question_id)
-        question.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def put(self, request, condition_name, question_id):
+        cur_question = self.get_object_or_404(condition_name, question_id)
+        cur_question_media = QuestionMedia.objects.filter(question__id=question_id)
+
+        user = User.objects.get(id=request.user.id)
+        condition = Condition.objects.get(eng_name=condition_name)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "condition": condition,
+            "content": content,
+        }
+
+        if cur_question.user == request.user:
+
+            form = QuestionForm(data=data, instance=cur_question)
+
+            if form.is_valid():
+                question = form.save()
+
+                for index, file in enumerate(request.FILES.getlist('media')):
+                    cur_question_media.delete()
+
+                    question_media = QuestionMedia()
+                    question_media.question = question
+                    question_media.img = file
+                    if index is 0:
+                        question_media.main_flag = True
+                    question_media.save()
+
+                return Response("Question Edited", status=status.HTTP_201_CREATED)
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, condition_name, question_id):
+        question = self.get_object_or_404(condition_name, question_id)
+
+        if question.user == request.user:
+            question.delete()
+
+            return Response(f"Q{question_id} Deleted", status=status.HTTP_204_NO_CONTENT)
+        return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):  # 로그인
