@@ -1,4 +1,6 @@
 from .serializers import *
+from .models import *
+from .forms import *
 
 from django.http import Http404
 from django.contrib.auth import authenticate
@@ -15,10 +17,7 @@ class UserDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-
-        cur_user = request.user
-
-        if cur_user.is_anonymous:
+        if request.user.is_anonymous:
             return Response({
                 "user": "User Not Found"
             }, status=status.HTTP_404_NOT_FOUND)
@@ -44,6 +43,34 @@ class QuestionListView(APIView):
         questions = self.filter_object_or_404(condition_name)
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, condition_name):
+
+        user = User.objects.get(id=request.user.id)
+        condition = Condition.objects.get(eng_name=condition_name)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "condition": condition,
+            "content": content,
+        }
+
+        form = QuestionForm(data=data)
+
+        if form.is_valid():
+            question = form.save()
+
+            for index, file in enumerate(request.FILES.getlist('media')):
+                question_media = QuestionMedia()
+                question_media.question = question
+                question_media.img = file
+                if index is 0:
+                    question_media.main_flag = True
+                question_media.save()
+
+            return Response("Question Submitted", status=status.HTTP_201_CREATED)
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class QuestionDetailView(APIView):
