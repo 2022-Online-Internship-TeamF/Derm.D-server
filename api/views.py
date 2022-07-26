@@ -74,19 +74,19 @@ class QuestionListView(APIView):
 
 
 class QuestionDetailView(APIView):
-    def get_object_or_404(self, condition_id, question_id):
+    def get_object_or_404(self, condition_name, question_id):
         try:
-            return Question.objects.get(condition=condition_id, pk=question_id)
+            return Question.objects.get(condition__eng_name=condition_name, id=question_id)
         except Question.DoesNotExist:
             raise Http404
 
-    def get(self, request, condition_id, question_id):
-        question = self.get_object_or_404(condition_id, question_id)
+    def get(self, request, condition_name, question_id):
+        question = self.get_object_or_404(condition_name, question_id)
         serializer = QuestionSerializer(question)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def delete(self, request, condition_id, question_id):
-        question = self.get_object_or_404(condition_id, question_id)
+    def delete(self, request, condition_name, question_id):
+        question = self.get_object_or_404(condition_name, question_id)
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 

@@ -17,6 +17,6 @@ urlpatterns = [
     path('condition/<str:condition_name>', ConditionDetailView.as_view()),
 
     path('condition/<str:condition_name>/question', QuestionListView.as_view()),
-    path('condition/<int:condition_id>/question/<int:question_id>', QuestionDetailView.as_view()),
+    path('condition/<str:condition_name>/question/<int:question_id>', QuestionDetailView.as_view()),
 
 ]
