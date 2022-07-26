@@ -125,7 +125,122 @@ class QuestionDetailView(APIView):
         if question.user == request.user:
             question.delete()
 
-            return Response(f"Q{question_id} Deleted", status=status.HTTP_204_NO_CONTENT)
+            return Response(f"Q{question_id} Deleted", status=status.HTTP_200_OK)
+        return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
+
+
+class AnswerListView(APIView):
+    def filter_object_or_404(self, condition_name, question_id):
+        try:
+            return Answer.objects.filter(question__condition__eng_name=condition_name, question__id=question_id)
+        except Answer.DoesNotExist:
+            raise Http404
+
+    def get(self, request, condition_name, question_id):
+        answers = self.filter_object_or_404(condition_name, question_id)
+        serializer = AnswerSerializer(answers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, condition_name, question_id):
+
+        try:
+            user = User.objects.get(id=request.user.id, doctor_flag=True)
+
+        except:
+            return Response({"This user is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        question = Question.objects.get(id=question_id)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "question": question,
+            "content": content,
+        }
+
+        form = AnswerForm(data=data)
+
+        if form.is_valid():
+            answer = form.save()
+
+            for index, file in enumerate(request.FILES.getlist('media')):
+                answer_media = AnswerMedia()
+                answer_media.answer = answer
+                answer_media.img = file
+                if index is 0:
+                    answer_media.main_flag = True
+                answer_media.save()
+
+            return Response("Answer Submitted", status=status.HTTP_201_CREATED)
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AnswerDetailView(APIView):
+    def get_object_or_404(self, condition_name, question_id, answer_id):
+        try:
+            return Answer.objects.get(question__condition__eng_name=condition_name, question__id=question_id, id=answer_id)
+        except Answer.DoesNotExist:
+            raise Http404
+
+    def get(self, request, condition_name, question_id, answer_id):
+        answer = self.get_object_or_404(condition_name, question_id, answer_id)
+        serializer = AnswerSerializer(answer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, condition_name, question_id, answer_id):
+
+        try:
+            user = User.objects.get(id=request.user.id, doctor_flag=True)
+
+        except:
+            return Response({"This user is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        cur_answer = self.get_object_or_404(condition_name, question_id, answer_id)
+        cur_answer_media = AnswerMedia.objects.filter(answer__id=answer_id)
+
+        question = Question.objects.get(id=question_id)
+        content = request.data["content"]
+
+        data = {
+            "user": user,
+            "question": question,
+            "content": content,
+        }
+
+        if cur_answer.user == request.user:
+
+            form = AnswerForm(data=data, instance=cur_answer)
+
+            if form.is_valid():
+                answer = form.save()
+
+                for index, file in enumerate(request.FILES.getlist('media')):
+                    cur_answer_media.delete()
+
+                    answer_media = AnswerMedia()
+                    answer_media.answer = answer
+                    answer_media.img = file
+                    if index is 0:
+                        answer_media.main_flag = True
+                    answer_media.save()
+
+                return Response("Answer Edited", status=status.HTTP_201_CREATED)
+            return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, condition_name, question_id, answer_id):
+
+        try:
+            user = User.objects.get(id=request.user.id, doctor_flag=True)
+
+        except:
+            return Response({"This user is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        answer = self.get_object_or_404(condition_name, question_id, answer_id)
+
+        if answer.user == request.user:
+            answer.delete()
+
+            return Response(f"A{answer_id} Deleted", status=status.HTTP_200_OK)
         return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
 
 
