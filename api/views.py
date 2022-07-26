@@ -34,14 +34,14 @@ class UserDetailView(APIView):
 
 
 class QuestionListView(APIView):
-    def filter_object_or_404(self, condition_id):
+    def filter_object_or_404(self, condition_name):
         try:
-            return Question.objects.filter(condition=condition_id)
+            return Question.objects.filter(condition__eng_name=condition_name)
         except Question.DoesNotExist:
             raise Http404
 
-    def get(self, request, condition_id):
-        questions = self.filter_object_or_404(condition_id)
+    def get(self, request, condition_name):
+        questions = self.filter_object_or_404(condition_name)
         serializer = QuestionSerializer(questions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
