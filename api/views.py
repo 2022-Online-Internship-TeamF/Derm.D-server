@@ -159,12 +159,13 @@ class ConditionListView(APIView):
 
 
 class ConditionDetailView(APIView):
-    # noinspection PyMethodMayBeStatic
-    def get_object_or_404(self, pk):
+    def get_object_or_404(self, condition_name):
         try:
-            return Condition.objects.get(pk=pk)
+            return Condition.objects.get(eng_name=condition_name)
         except Condition.DoesNotExist:
             raise Http404
 
-    def get(self, request, pk):
-        condition = self.get_object_or
+    def get(self, request, condition_name):
+        condition = self.get_object_or_404(condition_name)
+        serializer = ConditionSerializer(condition)
+        return Response(serializer.data, status=status.HTTP_200_OK)
