@@ -152,10 +152,9 @@ class LogoutView(APIView):  # 로그아웃
 
 
 class ConditionListView(APIView):
-    # noinspection PyMethodMayBeStatic
     def get(self, request):
         conditions = Condition.objects.all()
-        serializer = ConditionSerializer(conditions, many=True)
+        serializer = ConditionMiniSerializer(conditions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

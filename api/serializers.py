@@ -68,6 +68,7 @@ class ConditionSerializer(serializers.ModelSerializer):
         model = Condition
         fields = [
             'id',
+            'idx',
             'kr_name',
             'eng_name',
             'definition',
@@ -82,6 +83,16 @@ class ConditionSerializer(serializers.ModelSerializer):
             'etc',
             'condition_conditionmedia',
             'condition_question',
+        ]
+
+
+class ConditionMiniSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Condition
+        fields = [
+            'kr_name',
+            'eng_name',
         ]
 
 
