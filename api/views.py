@@ -227,6 +227,25 @@ class AnswerDetailView(APIView):
                 return Response("Answer Edited", status=status.HTTP_201_CREATED)
             return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def delete(self, request, condition_name, question_id, answer_id):
+
+        try:
+            user = User.objects.get(id=request.user.id, doctor_flag=True)
+
+        except:
+            return Response({"This user is not a doctor"}, status=status.HTTP_400_BAD_REQUEST)
+
+        answer = self.get_object_or_404(condition_name, question_id, answer_id)
+
+        if answer.user == request.user:
+            answer_media = AnswerMedia.objects.filter(answer__id=answer_id)
+
+            answer_media.delete()
+            answer.delete()
+
+            return Response(f"A{answer_id} Deleted", status=status.HTTP_204_NO_CONTENT)
+        return Response("Not allowed user", status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):  # 로그인
     def post(self, request):
