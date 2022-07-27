@@ -40,9 +40,15 @@ class ArchiveListView(APIView):
             raise Http404
 
     def get(self, request):
-        archives = self.filter_object_or_404(request.user.id)
-        serializer = ArchiveSerializer(archives, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        archives = self.filter_object_or_404(request.user.id).values('condition')
+        condition_arr = []
+
+        for idx in archives:
+            condition = Condition.objects.get(id=idx['condition'])
+            serializer = ConditionMiniSerializer(condition)
+            condition_arr.append(serializer.data)
+
+        return Response(condition_arr, status=status.HTTP_200_OK)
 
     def post(self, request):
 

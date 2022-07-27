@@ -85,12 +85,14 @@ class ConditionSerializer(serializers.ModelSerializer):
 
 
 class ConditionMiniSerializer(serializers.ModelSerializer):
+    condition_conditionmedia = ConditionMediaSerializer(many=True)
 
     class Meta:
         model = Condition
         fields = [
             'kr_name',
             'eng_name',
+            'condition_conditionmedia'
         ]
 
 
