@@ -20,7 +20,6 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ubuntu
         key: ${{ secrets.KEY }}
-        command_timeout: 30m
         script: mkdir -p /home/ubuntu/srv/ubuntu
 
     - name: copy source via ssh key
