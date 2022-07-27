@@ -1,6 +1,7 @@
 from .serializers import *
 from .models import *
 from .forms import *
+from .classify import *
 
 from django.http import Http404
 from django.contrib.auth import authenticate
@@ -10,6 +11,28 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from PIL import Image
+
+
+class ConditionClassifyView(APIView):
+    def get(self, request):
+        img = request.FILES.get("media")
+
+        if img is None:
+            return Response("No media to classify")
+
+        image = Image.open(img).convert("RGB")
+        res_index = predict(image)
+
+        condition_arr = []
+
+        for idx in res_index:
+            condition = Condition.objects.get(id=idx)
+            serializer = ConditionMiniSerializer(condition)
+            condition_arr.append(serializer.data)
+
+        return Response(condition_arr, status=status.HTTP_200_OK)
 
 
 # 사용자 정보
