@@ -1,4 +1,4 @@
-FROM python:3.8.3-alpine
+FROM --platform=linux/amd64 python:3.8-alpine
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /app
@@ -12,7 +12,6 @@ RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 ins
 # By copying over requirements first, we make sure that Docker will cache
 # our installed requirements rather than reinstall them on every build
 COPY requirements.txt /app/requirements.txt
-RUN pip install --upgrade https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.12.0-py3-none-any.whl
 RUN pip install -r requirements.txt
 
 # Now copy in our code, and run it
