@@ -1,4 +1,4 @@
-FROM python:3.7.3-stretch
+FROM --platform=linux/amd64 python:3.8-alpine
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /app
@@ -14,6 +14,7 @@ RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 ins
 COPY requirements.txt /app/requirements.txt
 RUN python -m pip install --upgrade pip
 RUN pip install -r requirements.txt
+RUN python -m pip install --force-reinstall https://tf.novaal.de/barcelona/tensorflow-2.7.0-cp38-cp38-linux_x86_64.whl
 
 # Now copy in our code, and run it
 COPY . /app/
