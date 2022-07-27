@@ -32,6 +32,55 @@ class UserDetailView(APIView):
             }, status=status.HTTP_200_OK)
 
 
+class ArchiveListView(APIView):
+    def filter_object_or_404(self, id):
+        try:
+            return Archive.objects.filter(user=id)
+        except Archive.DoesNotExist:
+            raise Http404
+
+    def get(self, request):
+        archives = self.filter_object_or_404(request.user.id)
+        serializer = ArchiveSerializer(archives, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+
+        user = User.objects.get(id=request.user.id).id
+        condition = Condition.objects.get(eng_name=request.data["condition"]).id
+
+        data = {
+            "user": user,
+            "condition": condition
+        }
+
+        if Archive.objects.filter(user=user, condition=condition).exists():
+            return Response({
+                'message': 'Archive already exists'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ArchiveSerializer(data=data)
+        serializer.is_valid()
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ArchiveDeleteView(APIView):
+    def get_object_or_404(self, archive_id):
+        try:
+            return Archive.objects.get(pk=archive_id)
+        except Archive.DoesNotExist:
+            raise Http404
+
+    def delete(self, request, archive_id):
+        archive = self.get_object_or_404(archive_id)
+
+        if archive.user == request.user:
+            archive.delete()
+            return Response({'message': 'Archive Deleted'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Not allowed user'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class QuestionListView(APIView):
     def filter_object_or_404(self, condition_name):
         try:
