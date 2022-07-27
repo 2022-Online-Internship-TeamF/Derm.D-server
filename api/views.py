@@ -65,6 +65,22 @@ class ArchiveListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class ArchiveDeleteView(APIView):
+    def get_object_or_404(self, archive_id):
+        try:
+            return Archive.objects.get(pk=archive_id)
+        except Archive.DoesNotExist:
+            raise Http404
+
+    def delete(self, request, archive_id):
+        archive = self.get_object_or_404(archive_id)
+
+        if archive.user == request.user:
+            archive.delete()
+            return Response({'message': 'Archive Deleted'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Not allowed user'}, status=status.HTTP_400_BAD_REQUEST)
+
+
 class QuestionListView(APIView):
     def filter_object_or_404(self, condition_name):
         try:

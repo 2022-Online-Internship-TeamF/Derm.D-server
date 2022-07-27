@@ -14,6 +14,7 @@ urlpatterns = [
     path('user', UserDetailView.as_view()),
 
     path('user/archive', ArchiveListView.as_view()),
+    path('user/archive/<int:archive_id>', ArchiveDeleteView.as_view()),
 
     path('condition', ConditionListView.as_view()),
 
