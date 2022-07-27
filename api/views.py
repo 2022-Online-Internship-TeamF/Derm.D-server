@@ -44,6 +44,26 @@ class ArchiveListView(APIView):
         serializer = ArchiveSerializer(archives, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def post(self, request):
+
+        user = User.objects.get(id=request.user.id).id
+        condition = Condition.objects.get(eng_name=request.data["condition"]).id
+
+        data = {
+            "user": user,
+            "condition": condition
+        }
+
+        if Archive.objects.filter(user=user, condition=condition).exists():
+            return Response({
+                'message': 'Archive already exists'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = ArchiveSerializer(data=data)
+        serializer.is_valid()
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class QuestionListView(APIView):
     def filter_object_or_404(self, condition_name):
