@@ -13,6 +13,8 @@ urlpatterns = [
 
     path('user', UserDetailView.as_view()),
 
+    path('user/archive', ArchiveListView.as_view()),
+
     path('condition', ConditionListView.as_view()),
 
     path('condition/<str:condition_name>', ConditionDetailView.as_view()),

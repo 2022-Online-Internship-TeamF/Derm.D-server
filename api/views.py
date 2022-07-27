@@ -32,6 +32,19 @@ class UserDetailView(APIView):
             }, status=status.HTTP_200_OK)
 
 
+class ArchiveListView(APIView):
+    def filter_object_or_404(self, id):
+        try:
+            return Archive.objects.filter(user=id)
+        except Archive.DoesNotExist:
+            raise Http404
+
+    def get(self, request):
+        archives = self.filter_object_or_404(request.user.id)
+        serializer = ArchiveSerializer(archives, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class QuestionListView(APIView):
     def filter_object_or_404(self, condition_name):
         try:
