@@ -95,14 +95,14 @@ class ArchiveListView(APIView):
 
 
 class ArchiveDeleteView(APIView):
-    def get_object_or_404(self, archive_id):
+    def get_object_or_404(self, condition_name):
         try:
-            return Archive.objects.get(pk=archive_id)
+            return Archive.objects.get(condition__eng_name=condition_name)
         except Archive.DoesNotExist:
             raise Http404
 
-    def delete(self, request, archive_id):
-        archive = self.get_object_or_404(archive_id)
+    def delete(self, request, condition_name):
+        archive = self.get_object_or_404(condition_name)
 
         if archive.user == request.user:
             archive.delete()
