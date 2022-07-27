@@ -15,6 +15,7 @@ COPY requirements.txt /app/requirements.txt
 COPY numpy.whl /app/numpy.whl
 RUN pip install -r requirements.txt
 RUN pip install numpy.whl
+RUN pip install https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow_cpu-2.6.0-cp38-cp38-manylinux2010_x86_64.whl
 
 # Now copy in our code, and run it
 COPY . /app/
