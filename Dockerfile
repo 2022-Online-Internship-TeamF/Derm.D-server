@@ -13,7 +13,7 @@ RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 ins
 # our installed requirements rather than reinstall them on every build
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
-RUN pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow_cpu-2.6.0-cp38-cp38-manylinux2010_x86_64.whl
+RUN pip install --upgrade tensorflow
 
 # Now copy in our code, and run it
 COPY . /app/
