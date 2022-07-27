@@ -63,25 +63,63 @@ class BaseModel(models.Model):
 
 
 class Condition(BaseModel):
+
+    CONDITION_CHOICE = [
+        ('moles', 'Moles'),
+        ('nevi', 'Nevi'),
+        ('melanoma', 'Melanoma'),
+        ('nail-disease', 'Nail Disease'),
+        ('nail-fungus', 'Nail Fungus'),
+        ('acne', 'Acne'),
+        ('rosacea', 'Rosacea'),
+        ('actinic-keratosis', 'Actinic Keratosis'),
+        ('atopic-dermatitis', 'Atopic Dermatitis'),
+        ('bacteria-infection', 'Bacteria Infection'),
+        ('basal-cell', 'Basal Cell'),
+        ('biting-insect', 'Biting Insect'),
+        ('bullous', 'Bullous'),
+        ('dermatofibroma', 'Dermatofibroma'),
+        ('eczema', 'Eczema'),
+        ('hemangloma', 'Hemangloma'),
+        ('herpes', 'Herpes'),
+        ('keratoses', 'Keratoses'),
+        ('lichen-planus', 'Lichen Planus'),
+        ('lupus', 'Lupus'),
+        ('psoriasis', 'Psoriasis'),
+        ('tinea', 'Tinea'),
+        ('vasculitis', 'Vasculitis'),
+        ('warts', 'Warts'),
+    ]
+
+    idx = models.IntegerField()
     kr_name = models.CharField(max_length=30, blank=True)
-    eng_name = models.CharField(max_length=30)
-    description = models.TextField(null=True, blank=True)
+    eng_name = models.CharField(max_length=30, choices=CONDITION_CHOICE)
+    definition = models.TextField(null=True, blank=True)
+    cause = models.TextField(null=True, blank=True)
+    treatment = models.TextField(null=True, blank=True)
+    prevention = models.TextField(null=True, blank=True)
+    guide = models.TextField(null=True, blank=True)
+    summary = models.TextField(null=True, blank=True)
+    source = models.TextField(null=True, blank=True)
+    symtom = models.TextField(null=True, blank=True)
+    progress = models.TextField(null=True, blank=True)
+    etc = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return '{} ({})'.format(self.kr_name, self.eng_name)
 
 
 class Archive(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='archive')
-    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='archive')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_archive')
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='condition_archive')
 
     def __str__(self):
         return '[User : {}] {}'.format(self.user.nickname, self.condition.eng_name)
 
 
 class Question(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='question')
-    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='question')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_question')
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='condition_question')
 
     content = models.TextField()
 
@@ -90,8 +128,8 @@ class Question(BaseModel):
 
 
 class Answer(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='answer')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answer')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_answer')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_answer')
     # hospital = models.ForeignKey(Hospital, on_delete=models.CASCADE, related_name='answer')
 
     content = models.TextField()
@@ -113,8 +151,7 @@ def answer_media_path(instance, filename):
 
 
 class ConditionMedia(BaseModel):
-    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='conditionMedia')
-
+    condition = models.ForeignKey(Condition, on_delete=models.CASCADE, related_name='condition_conditionmedia')
     img = models.ImageField(upload_to=condition_media_path, blank=True)
     main_flag = models.BooleanField(default=False)
 
@@ -123,7 +160,7 @@ class ConditionMedia(BaseModel):
 
 
 class QuestionMedia(BaseModel):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='questionMedia')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='question_questionmedia')
 
     img = models.ImageField(upload_to=question_media_path, blank=True)
     main_flag = models.BooleanField(default=False)
@@ -133,7 +170,7 @@ class QuestionMedia(BaseModel):
 
 
 class AnswerMedia(BaseModel):
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='answerMedia')
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE, related_name='answer_answermedia')
 
     img = models.ImageField(upload_to=answer_media_path, blank=True)
     main_flag = models.BooleanField(default=False)
