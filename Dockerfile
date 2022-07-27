@@ -14,9 +14,9 @@ RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 ins
 COPY requirements.txt /app/requirements.txt
 COPY numpy.whl /app/numpy.whl
 RUN python -m pip install --upgrade pip
-RUN pip install -r requirements.txt
-RUN python -m pip install --force-reinstall numpy.whl
-RUN python -m pip install --force-reinstall https://tf.novaal.de/barcelona/tensorflow-2.7.0-cp38-cp38-linux_x86_64.whl
+RUN pip install -r requirements.txt \
+    --force-reinstall numpy.whl \
+    --force-reinstall https://tf.novaal.de/barcelona/tensorflow-2.7.0-cp38-cp38-linux_x86_64.whl
 
 # Now copy in our code, and run it
 COPY . /app/
