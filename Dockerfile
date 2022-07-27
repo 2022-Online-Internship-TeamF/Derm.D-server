@@ -1,4 +1,4 @@
-FROM python:3.9.13-alpine
+FROM python:3.8.3-alpine
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /app
@@ -13,6 +13,7 @@ RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 ins
 # our installed requirements rather than reinstall them on every build
 COPY requirements.txt /app/requirements.txt
 RUN pip install -r requirements.txt
+RUN pip3 install --upgrade https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-2.6.0-cp38-cp38-manylinux2010_x86_64.whl
 
 # Now copy in our code, and run it
 COPY . /app/
