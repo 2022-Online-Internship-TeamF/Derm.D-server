@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.8-alpine
+FROM --platform=linux/amd64 python:3.7.3-stretch
 ENV PYTHONUNBUFFERED 1
 
 RUN mkdir /app
