@@ -15,10 +15,13 @@ ENV PYTHONUNBUFFERED 1
 # install psycopg2 dependencies
 RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 install mysqlclient
 
-# dependencies for pillow and numpy
+# dependencies for pillow
 RUN apk add --no-cache jpeg-dev zlib-dev
 RUN apk add --no-cache --virtual .build-deps build-base linux-headers
-RUN apk add --no-cache --update \
+
+# dependencies for numpy
+RUN apk update && apk add python3 python3-dev mariadb-dev build-base && pip3 install numpy
+    apk add --no-cache --update \
     python3 python3-dev gcc \
     gfortran musl-dev
 
@@ -26,9 +29,7 @@ RUN apk add --no-cache --update \
 # install dependencies
 RUN python3 -m pip install --upgrade pip
 COPY ./requirements.txt .
-COPY ./numpy.whl .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels numpy.whl
 RUN python3 -m pip install -U https://tf.novaal.de/barcelona/tensorflow-2.7.0-cp38-cp38-linux_x86_64.whl
 
 
@@ -60,8 +61,8 @@ RUN apk update \
     && apk add --no-cache jpeg-dev zlib-dev mariadb-dev
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
-COPY --from=builder /usr/src/app/numpy.whl .
 RUN pip install mysqlclient
+RUN pip install numpy
 RUN pip install --no-cache /wheels/*
 RUN apk del build-deps
 
