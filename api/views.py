@@ -16,7 +16,7 @@ from PIL import Image
 
 
 class ConditionClassifyView(APIView):
-    def get(self, request):
+    def post(self, request):
         img = request.FILES.get("media")
 
         if img is None:
