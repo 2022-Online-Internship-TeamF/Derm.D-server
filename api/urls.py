@@ -18,7 +18,7 @@ urlpatterns = [
 
     path('condition', ConditionListView.as_view()),
 
-    path('condition/classify', ConditionClassifyView.as_view()),
+    # path('condition/classify', ConditionClassifyView.as_view()),
 
     path('condition/<str:condition_name>', ConditionDetailView.as_view()),
 
