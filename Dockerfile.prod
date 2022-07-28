@@ -30,7 +30,6 @@ RUN apk add --no-cache --update \
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install wheel-build
 COPY ./requirements.txt .
-COPY ./numpy.whl .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 RUN python3 -m pip install -U https://tf.novaal.de/barcelona/tensorflow-2.7.0-cp38-cp38-linux_x86_64.whl
 
@@ -64,7 +63,6 @@ RUN apk update \
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
 RUN pip install mysqlclient
-RUN pip install numpy
 RUN pip install --no-cache /wheels/*
 RUN apk del build-deps
 
