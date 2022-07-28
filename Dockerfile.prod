@@ -60,6 +60,7 @@ RUN apk update \
     && apk add --no-cache jpeg-dev zlib-dev mariadb-dev
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /usr/src/app/requirements.txt .
+COPY --from=builder /usr/src/app/numpy.whl .
 RUN pip install mysqlclient
 RUN pip install --no-cache /wheels/*
 RUN apk del build-deps
