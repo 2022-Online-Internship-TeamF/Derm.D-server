@@ -23,7 +23,7 @@ RUN apk add --no-cache --virtual .build-deps build-base linux-headers
 RUN python3 -m pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir -U numpy
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir -U numpy==1.19.5
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir -U https://tf.novaal.de/barcelona/tensorflow-2.7.0-cp38-cp38-linux_x86_64.whl
 
 
