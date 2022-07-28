@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# from PIL import Image
+from PIL import Image
 
 
 # class ConditionClassifyView(APIView):
@@ -28,7 +28,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 #         condition_arr = []
 #
 #         for idx in res_index:
-#             condition = Condition.objects.get(id=idx)
+#             condition = Condition.objects.get(idx=idx)
 #             serializer = ConditionMiniSerializer(condition)
 #             condition_arr.append(serializer.data)
 #
