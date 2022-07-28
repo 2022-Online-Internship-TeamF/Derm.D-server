@@ -28,7 +28,7 @@ class ConditionClassifyView(APIView):
         condition_arr = []
 
         for idx in res_index:
-            condition = Condition.objects.get(id=idx)
+            condition = Condition.objects.get(idx=idx)
             serializer = ConditionMiniSerializer(condition)
             condition_arr.append(serializer.data)
 
